@@ -1,0 +1,14 @@
+# Ignore Visual Studio folders
+.vs/
+x64/
+*.vcxproj.user
+
+# Ignore build artifacts
+*.obj
+*.exe
+*.log
+*.pdb
+
+# Ignore dependency files
+*.dll
+*.lib
