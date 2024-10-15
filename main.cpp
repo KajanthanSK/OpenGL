@@ -13,14 +13,14 @@
 
 float vertices[] =
 {
-	/* Position */		/* Color */
-	-0.5f,-0.5f,0.0f,	1.0f,0.0f,0.0f,
-	 0.5f,-0.5f,0.0f,	0.0f,1.0f,0.0f,
-	 0.5f, 0.5f,0.0f,	0.0f,0.0f,1.0f,
+	/* Position */		/* Color */			/* TextureCoords */
+	-0.5f,-0.5f,0.0f,	1.0f,0.0f,0.0f,		0.0f, 0.0f,
+	 0.5f,-0.5f,0.0f,	0.0f,1.0f,0.0f,		1.0f, 0.0f,
+	 0.5f, 0.5f,0.0f,	0.0f,0.0f,1.0f,		1.0f, 1.0f,
 
-	 0.5f, 0.5f,0.0f,	0.0f,0.0f,1.0f,
-	-0.5f, 0.5f,0.0f,	0.0f,0.0f,1.0f,
-	-0.5f,-0.5f,0.0f,	1.0f,0.0f,0.0f,
+	 0.5f, 0.5f,0.0f,	0.0f,0.0f,1.0f,		1.0f, 1.0f,
+	-0.5f, 0.5f,0.0f,	0.0f,0.0f,1.0f,		0.0f, 1.0f,
+	-0.5f,-0.5f,0.0f,	1.0f,0.0f,0.0f,		0.0f, 0.0f,
 };
 
 // Prototype
@@ -28,9 +28,10 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void userInput(GLFWwindow* window);
 void mouseCursorPosition(GLFWwindow* window, double xPos, double yPos);
 void mouseScrollPosition(GLFWwindow* window, double xOffset, double yOffset);
+unsigned int loadTexture(const char* texturePath);
 
 glm::mat4 model;
-glm::vec3 myPos = glm::vec3(1.0f);
+glm::vec3 myPos = glm::vec3(0.0f);
 
 int main()
 {
@@ -62,9 +63,6 @@ int main()
 		glfwTerminate();
 	}
 
-	/* Shader */
-	Shader shader("vertexShader.glsl", "fragmentShader.glsl");
-
 	/* Buffers */
 	unsigned int VBO, VAO;
 
@@ -78,12 +76,26 @@ int main()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
 
 	/* Position Attribute */
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
 	/* Color Attribute*/
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
+
+	/* Texture Coordinates Attribute*/
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+
+	/* Texture */
+	stbi_set_flip_vertically_on_load(true);
+	//GLuint texture = loadTexture("container.jpg");
+	GLuint texture = loadTexture("awesomeface.png");
+
+	/* Shader */
+	Shader shader("vertexShader.glsl", "fragmentShader.glsl");
+	shader.use();
+	shader.setInt("texture1", 0);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -95,42 +107,23 @@ int main()
 		float yValue = std::sin(time) / 2.0f + 0.5f; 
 		float zValue = std::sin(time) / 2.0f + 0.5f; 
 
-
 		// vector
 		glm::vec3 myVector;
 		myVector.x = xValue;
 		myVector.y = yValue;
 		myVector.z = 0.5f;
 
-		/*shader.setFloat("xColor", xValue);
-		shader.setFloat("yColor", yValue);
-		shader.setFloat("zColor", zValue);*/
-		//glUniform3f(glGetUniformLocation(shader.program, "color"), 1.0f, 0.5f, 0.5f);
-		//glUniform3fv(glGetUniformLocation(shader.program, "color"),1, glm::value_ptr(myVector));
-		//shader.setVec3("color", 1.0f, 0.5f, 0.5f);
 		shader.setVec3v("color", myVector);
 
 		// matrix
 		model = glm::mat4(1.0f);
-		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-		//glUniformMatrix4fv(glGetUniformLocation(shader.program, "model"), 1, GL_FALSE, &model[0][0]);
 		model = glm::translate(model, glm::vec3(myPos));
-		model = glm::rotate(model, glm::radians(45.0f)*time, glm::vec3(xValue, yValue, 0.5f));
 		shader.setMat4("model", model);
 
 		glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		shader.use();
-		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		model = glm::mat4(1.0f);
-		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-		//glUniformMatrix4fv(glGetUniformLocation(shader.program, "model"), 1, GL_FALSE, &model[0][0]);
-		model = glm::translate(model, glm::vec3(-0.5f,-0.2f,0.0f));
-		model = glm::rotate(model, glm::radians(45.0f) * time, glm::vec3(xValue, yValue, 0.5f));
-		shader.setMat4("model", model);
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -155,13 +148,13 @@ void userInput(GLFWwindow* window)
 		glfwSetWindowShouldClose(window, GL_TRUE);
 
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_TRUE)
-		myPos.y += 0.005f;
+		myPos.y += 0.0005f;
 	else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_TRUE)
-		myPos.y -= 0.005f;
+		myPos.y -= 0.0005f;
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_TRUE)
-		myPos.x += 0.005f;
+		myPos.x += 0.0005f;
 	else if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_TRUE)
-		myPos.x -= 0.005f;
+		myPos.x -= 0.0005f;
 }
 
 void mouseCursorPosition(GLFWwindow* window, double xPos, double yPos)
@@ -172,4 +165,43 @@ void mouseCursorPosition(GLFWwindow* window, double xPos, double yPos)
 void mouseScrollPosition(GLFWwindow* window, double xOffset, double yOffset)
 {
 	std::cout << "mouse scroll\n";
+}
+
+unsigned int loadTexture(const char* texturePath)
+{
+	unsigned int textureID;
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_2D, textureID);
+
+	/* Filter Options */
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	int width, height, nrChannels;
+	unsigned char* data = stbi_load(texturePath, &width, &height, &nrChannels, 0);
+
+	if (data)
+	{
+		// it's a better way to see that what our file is like png, jpg or jpeg ?
+		GLenum format;
+		if (nrChannels == 1)
+			format = GL_RED;
+		if (nrChannels == 3) // jpg file
+			format = GL_RGB;
+		if (nrChannels == 4) // png file
+			format = GL_RGBA;
+
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "Failed to load texture\n";
+	}
+
+	stbi_image_free(data);
+
+	return textureID;
 }
