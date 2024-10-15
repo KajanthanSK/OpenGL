@@ -112,7 +112,7 @@ int main()
 		glm::vec3 myVector;
 		myVector.x = xValue;
 		myVector.y = yValue;
-		myVector.z = 0.31f;
+		myVector.z = zValue;// 0.31f;
 
 		shader.setVec3v("color", myVector);
 		shader.setFloat("alpha", yValue);
@@ -190,7 +190,7 @@ unsigned int loadTexture(const char* texturePath)
 
 	if (data)
 	{
-		// it's a better way to see that what our file is like png, jpg or jpeg ?
+		// what our file is like png, jpg or jpeg ?
 		GLenum format;
 		if (nrChannels == 1)
 			format = GL_RED;

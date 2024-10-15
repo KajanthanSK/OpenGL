@@ -14,5 +14,5 @@ uniform float alpha;
 void main()
 {
 	//FragColor=vec4(color*outColor,1.0f);
-	FragColor = mix(texture(containerTexture, textCoords), texture(faceTexture, textCoords), alpha) * vec4(outColor * color, 1.0f);		
+	FragColor = mix(texture(containerTexture, textCoords), texture(faceTexture, textCoords), alpha);// * vec4(outColor * color, 1.0f);		
 }
