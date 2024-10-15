@@ -19,7 +19,7 @@ float vertices[] =
 	 0.5f, 0.5f,0.0f,	0.0f,0.0f,1.0f,		1.0f, 1.0f,
 
 	 0.5f, 0.5f,0.0f,	0.0f,0.0f,1.0f,		1.0f, 1.0f,
-	-0.5f, 0.5f,0.0f,	0.0f,0.0f,1.0f,		0.0f, 1.0f,
+	-0.5f, 0.5f,0.0f,	1.0f,0.0f,1.0f,		0.0f, 1.0f,
 	-0.5f,-0.5f,0.0f,	1.0f,0.0f,0.0f,		0.0f, 0.0f,
 };
 
@@ -89,13 +89,14 @@ int main()
 
 	/* Texture */
 	stbi_set_flip_vertically_on_load(true);
-	//GLuint texture = loadTexture("container.jpg");
-	GLuint texture = loadTexture("awesomeface.png");
+	GLuint containerTexture = loadTexture("container.jpg");
+	GLuint faceTexture = loadTexture("awesomeface.png");
 
 	/* Shader */
 	Shader shader("vertexShader.glsl", "fragmentShader.glsl");
 	shader.use();
-	shader.setInt("texture1", 0);
+	shader.setInt("containerTexture", 0);
+	shader.setInt("faceTexture", 1);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -111,9 +112,10 @@ int main()
 		glm::vec3 myVector;
 		myVector.x = xValue;
 		myVector.y = yValue;
-		myVector.z = 0.5f;
+		myVector.z = 0.31f;
 
 		shader.setVec3v("color", myVector);
+		shader.setFloat("alpha", yValue);
 
 		// matrix
 		model = glm::mat4(1.0f);
@@ -124,6 +126,10 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		shader.use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, containerTexture);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, faceTexture);
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
